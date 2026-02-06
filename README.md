@@ -77,24 +77,24 @@ Estrutura recomendada:
 ### 2.2 Configuração do application.properties
 
 Arquivo localizado em:
-### src/main/resources/application.properties
+src/main/resources/application.properties
 
 Conteúdo:
 
 spring.application.name=project_air-conditioning
 server.port=${PORT:8081}
 
-### ===============================
-### Conexão com o Banco (Supabase)
-### ===============================
+# ===============================
+# Conexão com o Banco (Supabase)
+# ==============================
 spring.datasource.url=${DB_URL}
 spring.datasource.username=${DB_USER}
 spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-### ===============================
-### JPA / Hibernate
-### ===============================
+# ===============================
+# JPA / Hibernate
+# ===============================
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
@@ -112,17 +112,17 @@ O Docker garante que o projeto rode da mesma forma em qualquer ambiente.
 
 Crie um arquivo chamado Dockerfile na raiz do projeto:
 
-### ===============================
-### Etapa de Build
-### ===============================
+# ===============================
+# Etapa de Build
+# ===============================
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-### ===============================
-### Etapa de Execução
-### ===============================
+# ===============================
+# Etapa de Execução
+# ===============================
 FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY --from=build /app/target/project_air-conditioning-0.0.1-SNAPSHOT.jar app.jar
@@ -136,6 +136,7 @@ O JAR gerado é copiado para uma imagem mais leve.
 A aplicação expõe a porta 8081.
 
 ## 🚀 4. Deploy no Render
+
 ### 4.1 Criando o Serviço
 
 Acesse: https://render.com
@@ -160,19 +161,19 @@ No painel do serviço, vá em Environment → Environment Variables e adicione:
 
 ### 🛠️ 5. Comandos Git Úteis
 
-### Inicializar repositório
+# Inicializar repositório
 git init
 
-### Adicionar repositório remoto
+# Adicionar repositório remoto
 git remote add origin https://github.com/LucasSalees/project_air-conditioning.git
 
-### Adicionar arquivos
+# Adicionar arquivos
 git add .
 
-### Commit
+# Commit
 git commit -m "Descrição da alteração"
 
-### Enviar para o GitHub
+# Enviar para o GitHub
 git push origin main
 
 ## ✅ 6. Teste de Funcionamento
