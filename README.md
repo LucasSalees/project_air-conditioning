@@ -1,102 +1,198 @@
 # 🌬️ Project Air Conditioning
 
-Sistema de gerenciamento de climatização desenvolvido com **Spring Boot 3.4.2** e implantado via **Docker** no **Render**, utilizando **Supabase (PostgreSQL)** como banco de dados.
+Sistema de gerenciamento de climatização desenvolvido com **Spring Boot 3.4.2**, utilizando **Java 21**, banco de dados **PostgreSQL (Supabase)** e deploy via **Docker no Render**.
+
+Este documento explica **passo a passo** como configurar o projeto desde o banco de dados até o deploy em produção.
+
+---
+
+## 📌 Tecnologias Utilizadas
+
+- Java 21  
+- Spring Boot 3.4.2  
+- PostgreSQL (Supabase)  
+- Docker  
+- Render (Deploy)  
+- Maven  
 
 ---
 
 ## 🗄️ 1. Banco de Dados (Supabase)
-O banco de dados utiliza **PostgreSQL** hospedado na nuvem.
 
-* **Criação:** Acesse [supabase.com](https://supabase.com) e crie um novo projeto.
-* **Configuração de Conexão:**
-    * Vá em `Project Settings` > `Database`.
-    * Em **Connection string**, selecione a aba **URI** e o modo **Transaction Pooler** (Porta `6543`).
-* **Padrão da URL:** `jdbc:postgresql://[HOST]:6543/postgres?prepareThreshold=0`
-* **Credenciais:** Guarde o Usuário (`postgres.xxxx`) e a Senha definida.
+O projeto utiliza **PostgreSQL hospedado no Supabase**.
 
----
+### 1.1 Criando o Banco de Dados
+1. Acesse: https://supabase.com  
+2. Crie uma conta (caso não tenha).
+3. Clique em **New Project**.
+4. Defina:
+   - Nome do projeto
+   - Senha do banco (guarde essa senha)
+   - Região
 
-## ☕ 2. Backend (Spring Boot 3.4.2)
-Desenvolvido com **Java 21**.
-
-### 📂 Estrutura de Pacotes
-Para evitar erros de `ComponentScan`, mantenha as classes sob a raiz `com.system_air`:
-
-| Pacote | Conteúdo |
-| :--- | :--- |
-| `com.system_air.project_air.conditioning` | Classe Principal (Application) |
-| `com.system_air.project_airconditioning.model` | Entidades JPA |
-| `com.system_air.project_airconditioning.controller` | Endpoints REST |
+Após a criação, aguarde a inicialização do projeto.
 
 ---
 
-### ⚙️ Configuração (application.properties)
-Localizado em `src/main/resources/`:
+### 1.2 Obtendo as Credenciais de Conexão
 
-properties
+1. No painel do Supabase, vá em:
+   **Project Settings → Database**
+2. Localize a seção **Connection string**.
+3. Selecione:
+   - Aba: **URI**
+   - Modo: **Transaction Pooler**
+   - Porta: **6543**
+
+### Padrão da URL JDBC:
+
+jdbc:postgresql://[HOST]:6543/postgres?prepareThreshold=0
+
+### Guarde as seguintes informações:
+
+DB_URL
+DB_USER (geralmente postgres.xxxx)
+DB_PASSWORD
+
+Esses dados serão usados no backend e no deploy.
+
+## ☕ 2. Backend (Spring Boot)
+
+O backend foi desenvolvido com Spring Boot 3.4.2 e Java 21.
+
+### 2.1 Estrutura de Pacotes
+
+⚠️ Importante:
+Para evitar problemas com ComponentScan, todas as classes devem estar abaixo do pacote raiz:
+### com.system_air
+
+Estrutura recomendada:
+
+| Pacote                                              | Responsabilidade                 |
+| --------------------------------------------------- | -------------------------------- |
+| `com.system_air.project_air.conditioning`           | Classe principal (`Application`) |
+| `com.system_air.project_airconditioning.model`      | Entidades JPA                    |
+| `com.system_air.project_airconditioning.controller` | Controllers / Endpoints REST     |
+
+### 2.2 Configuração do application.properties
+
+Arquivo localizado em:
+### src/main/resources/application.properties
+
+Conteúdo:
+
 spring.application.name=project_air-conditioning
 server.port=${PORT:8081}
 
-# Conexão via Variáveis de Ambiente
+### ===============================
+### Conexão com o Banco (Supabase)
+### ===============================
 spring.datasource.url=${DB_URL}
 spring.datasource.username=${DB_USER}
 spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-# JPA/Hibernate
+### ===============================
+### JPA / Hibernate
+### ===============================
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
----
+🔎 Explicação:
 
-###  🐳 3. Containerização (Dockerfile)
-Arquivo na raiz do projeto para garantir a portabilidade do deploy.
+As credenciais do banco são lidas por variáveis de ambiente, garantindo segurança.
+O ddl-auto=update cria/atualiza as tabelas automaticamente.
+A porta é configurável via variável PORT, necessária para o Render.
 
-Dockerfile
-# Build Stage
+## 🐳 3. Docker (Containerização)
+
+O Docker garante que o projeto rode da mesma forma em qualquer ambiente.
+
+### 3.1 Dockerfile
+
+Crie um arquivo chamado Dockerfile na raiz do projeto:
+
+### ===============================
+### Etapa de Build
+### ===============================
 FROM maven:3.9.6-eclipse-temurin-21 AS build
+WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Runtime Stage
+### ===============================
+### Etapa de Execução
+### ===============================
 FROM eclipse-temurin:21-jdk
-COPY --from=build /target/project_air-conditioning-0.0.1-SNAPSHOT.jar app.jar
+WORKDIR /app
+COPY --from=build /app/target/project_air-conditioning-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
----
+🔎 O que acontece aqui:
 
-### 🚀 4. Deploy (Render)
-Novo Serviço: Crie um Web Service conectado ao seu GitHub.
+O Maven compila o projeto.
+O JAR gerado é copiado para uma imagem mais leve.
+A aplicação expõe a porta 8081.
 
-Runtime: Selecione Docker.
+## 🚀 4. Deploy no Render
+### 4.1 Criando o Serviço
 
-Variáveis de Ambiente (Environment Variables):
+Acesse: https://render.com
+Clique em New → Web Service
+Conecte seu repositório do GitHub.
+Selecione:
+Runtime: Docker
+Branch: main
 
-DB_URL: Sua URL do Supabase.
-DB_USER: Seu usuário do banco.
-DB_PASSWORD: Sua senha do banco.
+### 4.2 Variáveis de Ambiente
 
-PORT: 8081 (alinhado ao EXPOSE do Docker).
+No painel do serviço, vá em Environment → Environment Variables e adicione:
 
-Nota: Se precisar reiniciar do zero, use a opção "Clear Build Cache & Deploy".
+| Variável      | Valor            |
+| ------------- | ---------------- |
+| `DB_URL`      | URL do Supabase  |
+| `DB_USER`     | Usuário do banco |
+| `DB_PASSWORD` | Senha do banco   |
+| `PORT`        | `8081`           |
 
----
+⚠️ O valor da PORT deve ser o mesmo definido no Dockerfile (EXPOSE 8081).
 
-### 🛠️ 5. Comandos Úteis
-Bash
-# Inicializar o repositório
+### 🛠️ 5. Comandos Git Úteis
+
+### Inicializar repositório
 git init
 
-# Vincular ao GitHub
-git remote add origin [https://github.com/LucasSalees/project_air-conditioning.git](https://github.com/LucasSalees/project_air-conditioning.git)
+### Adicionar repositório remoto
+git remote add origin https://github.com/LucasSalees/project_air-conditioning.git
 
-# Enviar alterações
+### Adicionar arquivos
 git add .
+
+### Commit
 git commit -m "Descrição da alteração"
+
+### Enviar para o GitHub
 git push origin main
 
-### ✅ 6. Teste de Funcionamento
-Após o status ficar Live no Render, valide através do endpoint: https://project-air-conditioning.onrender.com/api/agendamentos
+## ✅ 6. Teste de Funcionamento
 
-Resposta esperada: [] (Um JSON vazio indica que a conexão com o banco foi realizada com sucesso).
+Após o deploy ficar com status Live no Render, acesse:
+
+https://project-air-conditioning.onrender.com/api/agendamentos
+
+Resposta esperada:
+
+[]
+
+✔️ Um array vazio indica que:
+
+A aplicação está rodando
+O backend conectou corretamente ao banco de dados.
+
+## 👨‍💻 Autor
+
+**Lucas Sales**  
+🔗 LinkedIn: https://www.linkedin.com/in/lucas-salees/
+
+
