@@ -2,12 +2,10 @@ package com.system_air.project_air.conditioning;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@EntityScan("com.system_air.project_airconditioning.model") // Ajuste para o seu pacote de model
-@EnableJpaRepositories("com.system_air.project_airconditioning.repository") // Ajuste para o seu pacote de repo
+@ComponentScan(basePackages = {"com.system_air"}) // Isso resolve o conflito dos nomes dos pacotes
 public class ProjectAirConditioningApplication {
     public static void main(String[] args) {
         SpringApplication.run(ProjectAirConditioningApplication.class, args);
