@@ -32,8 +32,6 @@ O projeto utiliza **PostgreSQL hospedado no Supabase**.
 
 Após a criação, aguarde a inicialização do projeto.
 
----
-
 ### 1.2 Obtendo as Credenciais de Conexão
 
 1. No painel do Supabase, vá em:
@@ -55,6 +53,8 @@ DB_USER (geralmente postgres.xxxx)
 DB_PASSWORD
 
 Esses dados serão usados no backend e no deploy.
+
+---
 
 ## ☕ 2. Backend (Spring Boot)
 
@@ -84,17 +84,11 @@ Conteúdo:
 spring.application.name=project_air-conditioning
 server.port=${PORT:8081}
 
-# ===============================
-# Conexão com o Banco (Supabase)
-# ==============================
 spring.datasource.url=${DB_URL}
 spring.datasource.username=${DB_USER}
 spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-# ===============================
-# JPA / Hibernate
-# ===============================
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
@@ -104,6 +98,8 @@ As credenciais do banco são lidas por variáveis de ambiente, garantindo segura
 O ddl-auto=update cria/atualiza as tabelas automaticamente.
 A porta é configurável via variável PORT, necessária para o Render.
 
+---
+
 ## 🐳 3. Docker (Containerização)
 
 O Docker garante que o projeto rode da mesma forma em qualquer ambiente.
@@ -112,17 +108,11 @@ O Docker garante que o projeto rode da mesma forma em qualquer ambiente.
 
 Crie um arquivo chamado Dockerfile na raiz do projeto:
 
-# ===============================
-# Etapa de Build
-# ===============================
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# ===============================
-# Etapa de Execução
-# ===============================
 FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY --from=build /app/target/project_air-conditioning-0.0.1-SNAPSHOT.jar app.jar
@@ -134,6 +124,8 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 O Maven compila o projeto.
 O JAR gerado é copiado para uma imagem mais leve.
 A aplicação expõe a porta 8081.
+
+---
 
 ## 🚀 4. Deploy no Render
 
@@ -158,6 +150,8 @@ No painel do serviço, vá em Environment → Environment Variables e adicione:
 | `PORT`        | `8081`           |
 
 ⚠️ O valor da PORT deve ser o mesmo definido no Dockerfile (EXPOSE 8081).
+
+---
 
 ### 🛠️ 5. Comandos Git Úteis
 
@@ -190,6 +184,8 @@ Resposta esperada:
 
 A aplicação está rodando
 O backend conectou corretamente ao banco de dados.
+
+---
 
 ## 👨‍💻 Autor
 
