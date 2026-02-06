@@ -44,10 +44,10 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 # JPA/Hibernate
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
-
-### 🐳 3. Containerização (Dockerfile)
+🐳 3. Containerização (Dockerfile)
 Arquivo na raiz do projeto para garantir a portabilidade do deploy.
 
+Dockerfile
 # Build Stage
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 COPY . .
@@ -58,8 +58,7 @@ FROM eclipse-temurin:21-jdk
 COPY --from=build /target/project_air-conditioning-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
-### 🚀 4. Deploy (Render)
+🚀 4. Deploy (Render)
 Novo Serviço: Crie um Web Service conectado ao seu GitHub.
 
 Runtime: Selecione Docker.
@@ -76,8 +75,8 @@ PORT: 8081 (alinhado ao EXPOSE do Docker).
 
 Nota: Se precisar reiniciar do zero, use a opção "Clear Build Cache & Deploy".
 
-### 🛠️ 5. Comandos Úteis
-
+🛠️ 5. Comandos Úteis
+Bash
 # Inicializar o repositório
 git init
 
@@ -88,8 +87,7 @@ git remote add origin [https://github.com/LucasSalees/project_air-conditioning.g
 git add .
 git commit -m "Descrição da alteração"
 git push origin main
-
-### ✅ 6. Teste de Funcionamento
+✅ 6. Teste de Funcionamento
 Após o status ficar Live no Render, valide através do endpoint: https://project-air-conditioning.onrender.com/api/agendamentos
 
 Resposta esperada: [] (Um JSON vazio indica que a conexão com o banco foi realizada com sucesso).
