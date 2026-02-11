@@ -32,8 +32,8 @@ public class SecurityConfig {
 	        .authorizeHttpRequests(req -> {
 	            // Libera o Preflight (OPTIONS) - CRÍTICO para o React
 	            req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); 
-	            // Libera endpoints públicos
 	            req.requestMatchers("/login/**").permitAll();
+	            req.requestMatchers("/auth/**").permitAll();
 	            req.anyRequest().authenticated();
 	        })
 	        .addFilterBefore(securityFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
