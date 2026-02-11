@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/agendamentos")
-@CrossOrigin(origins = "*") // Necessário para o React conseguir acessar
 public class AgendamentoController {
 
     @Autowired

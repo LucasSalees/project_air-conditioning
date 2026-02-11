@@ -16,10 +16,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.Arrays;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -30,27 +26,17 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 	    return http
-	        .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS PRIMEIRO DE TUDO
-	        .csrf(csrf -> csrf.disable())
+	        .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita o CORS configurado abaixo
+	        .csrf(csrf -> csrf.disable()) // Desabilita CSRF para API REST
 	        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(req -> {
-	            // Libera explicitamente o OPTIONS para todas as rotas (vital para o navegador)
-	            req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
-	            // Libera as rotas de login e health real
+	            // Libera o Preflight (OPTIONS) - CRÍTICO para o React
+	            req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); 
+	            // Libera endpoints públicos
 	            req.requestMatchers("/login/**").permitAll();
 	            req.anyRequest().authenticated();
 	        })
-	        // O seu filtro de JWT vem depois das liberações acima
 	        .addFilterBefore(securityFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-	        .logout(logout -> logout
-	            .logoutUrl("/auth/logout")
-	            .logoutSuccessHandler((request, response, authentication) -> {
-	                System.out.println(">>> USUÁRIO SAIU DO SISTEMA - LOGOUT VIA SPRING SECURITY");
-	                response.setStatus(HttpServletResponse.SC_OK);
-	            })
-	            .clearAuthentication(true)
-	            .invalidateHttpSession(true)
-	        )
 	        .build();
 	}
 
@@ -58,13 +44,11 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 	    CorsConfiguration configuration = new CorsConfiguration();
 	    
-	    configuration.setAllowedOrigins(Arrays.asList(
-	        "http://localhost:5173", 
-	        "https://classar.netlify.app" // ADICIONE EXATAMENTE ASSIM
-	    ));
+	    // O segredo: "AllowedOriginPatterns" aceita "*" mesmo com credenciais (cookies/headers)
+	    configuration.setAllowedOriginPatterns(java.util.Collections.singletonList("*"));
 	    
-	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-	    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+	    configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+	    configuration.setAllowedHeaders(java.util.Arrays.asList("Authorization", "Content-Type", "Accept", "x-requested-with"));
 	    configuration.setAllowCredentials(true);
 	    
 	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
