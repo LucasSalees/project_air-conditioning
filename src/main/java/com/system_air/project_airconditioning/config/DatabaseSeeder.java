@@ -17,15 +17,10 @@ public class DatabaseSeeder {
             todosUsuarios.forEach(usuario -> {
                 String senhaAtual = usuario.getPassword();
 
-                // O BCrypt sempre começa com $2a$ ou $2b$
-                // Se NÃO começar, significa que é texto puro (como o '123456' vindo do SQL)
                 if (!senhaAtual.startsWith("$2a$") && !senhaAtual.startsWith("$2b$")) {
-                    System.out.println(">>> Detectada senha em texto puro para: " + usuario.getUsername());
                     
                     usuario.setPassword(encoder.encode(senhaAtual));
                     repository.save(usuario);
-                    
-                    System.out.println(">>> Senha de [" + usuario.getUsername() + "] criptografada com sucesso!");
                 }
             });
         };

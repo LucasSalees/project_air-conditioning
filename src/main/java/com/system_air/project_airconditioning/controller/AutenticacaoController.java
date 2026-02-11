@@ -28,8 +28,7 @@ public class AutenticacaoController {
     @PostMapping
     public ResponseEntity efetuarLogin(@RequestBody @Valid DadosAutenticacao dados) {
         try {
-            System.out.println(">>> TENTATIVA DE LOGIN: " + dados.username());
-            
+
             // 1. Busca o usuário para conferência de segurança e logs
             Usuario usuarioNoBanco = repository.findByUsername(dados.username())
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -41,14 +40,11 @@ public class AutenticacaoController {
             // 3. Geração do Token para o usuário autenticado
             var usuarioLogado = (Usuario) authentication.getPrincipal();
             var tokenJWT = tokenService.gerarToken(usuarioLogado);
-            
-            System.out.println(">>> LOGIN SUCESSO! PRIMEIRO ACESSO: " + usuarioLogado.isPrimeiroAcesso());
 
             // Retorna o Token e o status de primeiro acesso para o React
             return ResponseEntity.ok(new DadosTokenJWT(tokenJWT, usuarioLogado.isPrimeiroAcesso()));
             
         } catch (Exception e) {
-            System.out.println(">>> ERRO NO LOGIN: " + e.getMessage());
             return ResponseEntity.status(403).body("Erro na autenticação: " + e.getMessage());
         }
     }
@@ -68,8 +64,7 @@ public class AutenticacaoController {
             usuario.setPrimeiroAcesso(false);
             
             repository.save(usuario);
-            
-            System.out.println(">>> SENHA ALTERADA COM SUCESSO PARA: " + usuario.getUsername());
+
             return ResponseEntity.ok().build();
             
         } catch (Exception e) {
