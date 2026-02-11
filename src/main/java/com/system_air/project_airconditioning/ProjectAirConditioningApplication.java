@@ -1,4 +1,4 @@
-package com.system_air.project_air.conditioning;
+package com.system_air.project_airconditioning;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
