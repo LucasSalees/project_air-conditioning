@@ -1,4 +1,4 @@
-package com.system_air.project_airconditioning.config; // Ajuste para o seu pacote
+package com.system_air.project_airconditioning.config;
 
 import com.system_air.project_airconditioning.repository.UsuarioRepository;
 import com.system_air.project_airconditioning.service.TokenService;
@@ -28,14 +28,17 @@ public class SecurityFilter extends OncePerRequestFilter {
         var tokenJWT = recuperarToken(request);
 
         if (tokenJWT != null) {
-            // Agora o método getSubject existe e retorna String
             String subject = tokenService.getSubject(tokenJWT);
             
-            // Buscamos o usuário e garantimos que o Java entenda que é um 'Usuario'
+            // Extraímos o empresaId do Token (Sem consulta ao banco!)
+            Long empresaId = tokenService.getClaim(tokenJWT, "empresaId");
+            
+            // Injetamos na requisição para uso nos Controllers
+            request.setAttribute("empresaId", empresaId);
+
             var usuario = repository.findByUsername(subject)
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            // Aqui o erro de getAuthorities some se Usuario implementar UserDetails
             var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

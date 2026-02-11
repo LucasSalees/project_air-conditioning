@@ -5,12 +5,15 @@ import com.system_air.project_airconditioning.repository.UsuarioRepository;
 import com.system_air.project_airconditioning.service.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/login")
@@ -25,19 +28,16 @@ public class AutenticacaoController {
     @Autowired
     private UsuarioRepository repository;
 
-    @PostMapping
-    public ResponseEntity efetuarLogin(@RequestBody @Valid DadosAutenticacao dados) {
-        try {
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-            // 1. Busca o usuário para conferência de segurança e logs
-            Usuario usuarioNoBanco = repository.findByUsername(dados.username())
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-            
-            // 2. Validação via Spring Security
+    @PostMapping
+    public ResponseEntity<?> efetuarLogin(@RequestBody @Valid DadosAutenticacao dados) {
+        try {
+            // O Spring Security já valida se o usuário existe e se a senha está correta
             var authenticationToken = new UsernamePasswordAuthenticationToken(dados.username(), dados.password());
             var authentication = manager.authenticate(authenticationToken);
             
-            // 3. Geração do Token para o usuário autenticado
             var usuarioLogado = (Usuario) authentication.getPrincipal();
             var tokenJWT = tokenService.gerarToken(usuarioLogado);
 
@@ -45,43 +45,41 @@ public class AutenticacaoController {
             return ResponseEntity.ok(new DadosTokenJWT(tokenJWT, usuarioLogado.isPrimeiroAcesso()));
             
         } catch (Exception e) {
-            return ResponseEntity.status(403).body("Erro na autenticação: " + e.getMessage());
+            // Retornamos 403 para credenciais erradas, mantendo a segurança
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuário ou senha inválidos");
         }
     }
 
     @PutMapping("/alterar-senha")
-    public ResponseEntity alterarSenha(@RequestBody @Valid DadosAlteracaoSenha dados) {
+    public ResponseEntity<?> alterarSenha(@RequestBody @Valid DadosAlteracaoSenha dados) {
         try {
-            // Pega o usuário que já está autenticado pelo Token enviado no Header
+            // Recupera o usuário autenticado do contexto do Spring Security
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             var usuario = (Usuario) authentication.getPrincipal();
             
-            // Criptografa a nova senha escolhida pelo usuário
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            usuario.setPassword(encoder.encode(dados.novaSenha()));
-            
-            // Marca que o usuário já passou pelo primeiro acesso
+            // Criptografa a nova senha usando o Bean injetado
+            usuario.setPassword(passwordEncoder.encode(dados.novaSenha()));
             usuario.setPrimeiroAcesso(false);
             
             repository.save(usuario);
-
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
             
         } catch (Exception e) {
-            return ResponseEntity.status(400).body("Erro ao alterar senha: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao processar alteração");
         }
     }
     
     @GetMapping("/health")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Servidor Online");
+    public ResponseEntity<?> healthCheck() {
+        // Retorno em JSON para padrão REST profissional
+        return ResponseEntity.ok(Map.of(
+            "status", "UP",
+            "message", "Servidor Class Ar operacional"
+        ));
     }
 
     // --- DTOs (Data Transfer Objects) ---
-
     public record DadosAutenticacao(String username, String password) {}
-
     public record DadosTokenJWT(String token, boolean primeiroAcesso) {}
-
     public record DadosAlteracaoSenha(String novaSenha) {}
 }
