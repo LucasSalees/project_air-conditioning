@@ -34,7 +34,8 @@ public class SecurityConfig {
 	        .csrf(csrf -> csrf.disable())
 	        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(req -> {
-	            req.requestMatchers("/login/**").permitAll(); // Libera tudo que começa com /login/
+	            req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); // Libera o Preflight
+	            req.requestMatchers("/login/**").permitAll();
 	            req.anyRequest().authenticated();
 	        })
 	        .addFilterBefore(securityFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
@@ -53,24 +54,23 @@ public class SecurityConfig {
 	        .build();
 	}
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // NADA DE ASTERISCO AQUI:
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173", 
-            "https://mapaunip.netlify.app"
-        ));
-        
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
-        configuration.setAllowCredentials(true);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+	    CorsConfiguration configuration = new CorsConfiguration();
+	    
+	    configuration.setAllowedOrigins(Arrays.asList(
+	        "http://localhost:5173", 
+	        "https://classar.netlify.app" // ADICIONE EXATAMENTE ASSIM
+	    ));
+	    
+	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+	    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+	    configuration.setAllowCredentials(true);
+	    
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", configuration);
+	    return source;
+	}
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
