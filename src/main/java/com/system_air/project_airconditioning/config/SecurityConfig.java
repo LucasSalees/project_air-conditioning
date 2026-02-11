@@ -34,7 +34,7 @@ public class SecurityConfig {
 	        .csrf(csrf -> csrf.disable())
 	        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(req -> {
-	            req.requestMatchers("/login").permitAll();
+	            req.requestMatchers("/login/**").permitAll(); // Libera tudo que começa com /login/
 	            req.anyRequest().authenticated();
 	        })
 	        .addFilterBefore(securityFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
@@ -48,6 +48,8 @@ public class SecurityConfig {
         	    .clearAuthentication(true)
         	    .invalidateHttpSession(true)
         	)
+	        
+
 	        .build();
 	}
 

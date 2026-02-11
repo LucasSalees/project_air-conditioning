@@ -77,6 +77,11 @@ public class AutenticacaoController {
             return ResponseEntity.status(400).body("Erro ao alterar senha: " + e.getMessage());
         }
     }
+    
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Servidor Online");
+    }
 
     // --- DTOs (Data Transfer Objects) ---
 
