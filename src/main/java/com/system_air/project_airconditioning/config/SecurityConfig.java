@@ -30,27 +30,27 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 	    return http
-	        .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ADICIONE ESTA LINHA
+	        .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS PRIMEIRO DE TUDO
 	        .csrf(csrf -> csrf.disable())
 	        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(req -> {
-	            req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); // Libera o Preflight
+	            // Libera explicitamente o OPTIONS para todas as rotas (vital para o navegador)
+	            req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+	            // Libera as rotas de login e health real
 	            req.requestMatchers("/login/**").permitAll();
 	            req.anyRequest().authenticated();
 	        })
+	        // O seu filtro de JWT vem depois das liberações acima
 	        .addFilterBefore(securityFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
 	        .logout(logout -> logout
-        	    .logoutUrl("/auth/logout")
-        	    .logoutSuccessHandler((request, response, authentication) -> {
-        	        // O SEU PRINT DEVE IR AQUI:
-        	        System.out.println(">>> USUÁRIO SAIU DO SISTEMA - LOGOUT VIA SPRING SECURITY");
-        	        response.setStatus(HttpServletResponse.SC_OK);
-        	    })
-        	    .clearAuthentication(true)
-        	    .invalidateHttpSession(true)
-        	)
-	        
-
+	            .logoutUrl("/auth/logout")
+	            .logoutSuccessHandler((request, response, authentication) -> {
+	                System.out.println(">>> USUÁRIO SAIU DO SISTEMA - LOGOUT VIA SPRING SECURITY");
+	                response.setStatus(HttpServletResponse.SC_OK);
+	            })
+	            .clearAuthentication(true)
+	            .invalidateHttpSession(true)
+	        )
 	        .build();
 	}
 
