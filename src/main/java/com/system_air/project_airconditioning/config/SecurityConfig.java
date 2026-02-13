@@ -45,10 +45,16 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 	    CorsConfiguration configuration = new CorsConfiguration();
-	    // Libera especificamente o seu endereço do Netlify
-	    configuration.setAllowedOrigins(Arrays.asList("https://classarcondicionado.netlify.app", "http://localhost:5500"));
+	    
+	    // Adicionamos as origens permitidas (Produção + Localhost)
+	    configuration.setAllowedOrigins(Arrays.asList(
+	        "https://classarcondicionado.netlify.app", 
+	        "http://localhost:5500", 
+	        "http://127.0.0.1:5500" // Algumas versões do Live Server usam o IP
+	    ));
+	    
 	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-	    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+	    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
 	    configuration.setAllowCredentials(true);
 	    
 	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
