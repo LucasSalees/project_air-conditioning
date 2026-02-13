@@ -1,11 +1,6 @@
 package com.system_air.project_airconditioning.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -14,10 +9,6 @@ import java.util.Collections;
 
 @Entity
 @Table(name = "usuarios")
-@Getter 
-@Setter // ESTA ANOTAÇÃO GERA O setPassword()
-@NoArgsConstructor // O Hibernate precisa de um construtor vazio
-@AllArgsConstructor // Útil para criar o objeto completo
 public class Usuario implements UserDetails {
 
     private static final long serialVersionUID = 1L;

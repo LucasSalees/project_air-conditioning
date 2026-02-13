@@ -1,12 +1,17 @@
 package com.system_air.project_airconditioning.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "agendamentos")
-@Data // O Lombok cria os getters e setters para você
+@NoArgsConstructor
+@Getter 
+@Setter
 public class Agendamento {
 
     @Id
@@ -15,20 +20,19 @@ public class Agendamento {
 
     private String clienteNome;
     private String telefone;
-    
-    // Campos de endereço
     private String cep;
     private String logradouro;
     private String numero;
     private String bairro;
     private String cidade;
-
-    private String tipoServico; // Instalação, Limpeza, etc.
+    private String tipoServico;
     private String descricao;
-    
     private LocalDateTime dataHoraAgendamento;
-    
     private String status = "PENDENTE";
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id")
+    private Empresa empresa;
 
 	public Long getId() {
 		return id;
@@ -125,5 +129,13 @@ public class Agendamento {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-    
+
+	public Empresa getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Empresa empresa) {
+		this.empresa = empresa;
+	}
+
 }

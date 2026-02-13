@@ -1,14 +1,11 @@
 package com.system_air.project_airconditioning.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import java.io.Serializable;
 
 @Entity
 @Table(name = "empresas")
-@Getter 
-@Setter
+
 public class Empresa implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -23,11 +20,6 @@ public class Empresa implements Serializable {
     @Column(nullable = false, unique = true, length = 14) 
     private String cnpj;
 
-    // Se quiser que o JPA gerencie a deleção:
-    // @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    // private List<Usuario> usuarios;
-    
-    // Adicione isso manualmente na classe Empresa
     public Long getId() {
         return id;
     }
@@ -35,4 +27,24 @@ public class Empresa implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getCnpj() {
+		return cnpj;
+	}
+
+	public void setCnpj(String cnpj) {
+		this.cnpj = cnpj;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
 }

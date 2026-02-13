@@ -1,5 +1,7 @@
 package com.system_air.project_airconditioning.config;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
 	@Autowired
-	private SecurityFilter securityFilter; // Certifique-se de que o nome da classe está correto
+	private SecurityFilter securityFilter; 
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -43,12 +45,10 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 	    CorsConfiguration configuration = new CorsConfiguration();
-	    
-	    // O segredo: "AllowedOriginPatterns" aceita "*" mesmo com credenciais (cookies/headers)
-	    configuration.setAllowedOriginPatterns(java.util.Collections.singletonList("*"));
-	    
-	    configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
-	    configuration.setAllowedHeaders(java.util.Arrays.asList("Authorization", "Content-Type", "Accept", "x-requested-with"));
+	    // Libera especificamente o seu endereço do Netlify
+	    configuration.setAllowedOrigins(Arrays.asList("https://classarcondicionado.netlify.app", "http://localhost:5500"));
+	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+	    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
 	    configuration.setAllowCredentials(true);
 	    
 	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
