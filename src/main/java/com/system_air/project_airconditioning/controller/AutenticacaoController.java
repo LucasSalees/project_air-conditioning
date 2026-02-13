@@ -70,12 +70,14 @@ public class AutenticacaoController {
     }
     
     @GetMapping("/health")
-    public ResponseEntity<?> healthCheck() {
-        // Retorno em JSON para padrão REST profissional
-        return ResponseEntity.ok(Map.of(
-            "status", "UP",
-            "message", "Servidor Class Ar operacional"
-        ));
+    public ResponseEntity<String> health() {
+        try {
+            // Opcional: Tente um count simples para validar o Hibernate/Supabase
+            // userRepository.count(); 
+            return ResponseEntity.ok("CLASS_AR_SYSTEM_READY");
+        } catch (Exception e) {
+            return ResponseEntity.status(503).body("DATABASE_OFFLINE");
+        }
     }
 
     // --- DTOs (Data Transfer Objects) ---
