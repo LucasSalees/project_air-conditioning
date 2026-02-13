@@ -25,27 +25,36 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getRequestURI();
+
+        // ESCAPE: Se for health ou login, ignora o filtro e vai direto para o próximo
+        if (path.contains("/login/health") || path.contains("/auth") || path.contains("/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         var tokenJWT = recuperarToken(request);
 
         if (tokenJWT != null) {
-            String subject = tokenService.getSubject(tokenJWT);
-            
-            // Extraímos o empresaId do Token (Sem consulta ao banco!)
-            Long empresaId = tokenService.getClaim(tokenJWT, "empresaId");
-            
-            // Injetamos na requisição para uso nos Controllers
-            request.setAttribute("empresaId", empresaId);
+            try {
+                String subject = tokenService.getSubject(tokenJWT);
+                Long empresaId = tokenService.getClaim(tokenJWT, "empresaId");
+                request.setAttribute("empresaId", empresaId);
 
-            var usuario = repository.findByUsername(subject)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                var usuario = repository.findByUsername(subject)
+                        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (Exception e) {
+                // Se o token for inválido, não trava a requisição aqui, 
+                // deixa o Spring Security barrar no 'authenticated()' do SecurityConfig
+                System.err.println("Erro na validação do token: " + e.getMessage());
+            }
         }
 
         filterChain.doFilter(request, response);
     }
-
     private String recuperarToken(HttpServletRequest request) {
         var authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null) {

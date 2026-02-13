@@ -69,15 +69,9 @@ public class AutenticacaoController {
         }
     }
     
-    @GetMapping("/health")
-    public ResponseEntity<String> health() {
-        try {
-            // Opcional: Tente um count simples para validar o Hibernate/Supabase
-            // userRepository.count(); 
-            return ResponseEntity.ok("CLASS_AR_SYSTEM_READY");
-        } catch (Exception e) {
-            return ResponseEntity.status(503).body("DATABASE_OFFLINE");
-        }
+    @GetMapping("/health") // O caminho final será /login/health
+    public ResponseEntity<String> check() {
+        return ResponseEntity.ok("CLASS_AR_SYSTEM_READY");
     }
 
     // --- DTOs (Data Transfer Objects) ---

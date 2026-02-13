@@ -28,16 +28,21 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 	    return http
-	        .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita o CORS configurado abaixo
-	        .csrf(csrf -> csrf.disable()) // Desabilita CSRF para API REST
+	        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+	        .csrf(csrf -> csrf.disable())
 	        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(req -> {
-	            // Libera o Preflight (OPTIONS) - CRÍTICO para o React
-	            req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); 
-	            req.requestMatchers("/login/**").permitAll();
+	            // Libera explicitamente o health check e rotas de auth
+	            req.requestMatchers("/login/health").permitAll(); 
+	            req.requestMatchers("/login").permitAll();
 	            req.requestMatchers("/auth/**").permitAll();
+	            
+	            // Libera OPTIONS para evitar erro de Preflight
+	            req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+	            
 	            req.anyRequest().authenticated();
 	        })
+	        // O filtro de segurança deve vir DEPOIS do CORS
 	        .addFilterBefore(securityFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
 	        .build();
 	}
@@ -46,15 +51,19 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 	    CorsConfiguration configuration = new CorsConfiguration();
 	    
-	    // Adicionamos as origens permitidas (Produção + Localhost)
-	    configuration.setAllowedOrigins(Arrays.asList(
+	    // Adicione TODAS as variações de onde seu front pode vir
+	    configuration.setAllowedOriginPatterns(Arrays.asList(
 	        "https://classarcondicionado.netlify.app", 
-	        "http://localhost:5500", 
-	        "http://127.0.0.1:5500" // Algumas versões do Live Server usam o IP
+	        "http://127.0.0.1:5500",
+	        "http://localhost:5500",
+	        "http://127.0.0.1:8080",
+	        "http://localhost:8080",
+	        "http://127.0.0.1:*", // Útil para diferentes portas de Live Server
+	        "http://localhost:*"
 	    ));
 	    
 	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-	    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+	    configuration.setAllowedHeaders(Arrays.asList("*")); // Permite todos os headers para evitar erro no health
 	    configuration.setAllowCredentials(true);
 	    
 	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
